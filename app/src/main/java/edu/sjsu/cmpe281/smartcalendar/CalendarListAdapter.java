@@ -6,6 +6,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class CalendarListAdapter extends RecyclerView.Adapter <CalendarListAdapter.CalendarViewHolder>{
@@ -13,6 +15,7 @@ public class CalendarListAdapter extends RecyclerView.Adapter <CalendarListAdapt
 
     public CalendarListAdapter(List<CalendarEvent> entryList) {
         this.entryList = entryList;
+        Collections.sort(this.entryList, new DateComparator());
     }
 
     @Override
@@ -28,8 +31,8 @@ public class CalendarListAdapter extends RecyclerView.Adapter <CalendarListAdapt
     public void onBindViewHolder(CalendarViewHolder holder, int position) {
         CalendarEvent entry = entryList.get(position);
         holder.vName.setText(entry.name);
-        holder.vDate.setText(entry.date);
-        holder.vTime.setText(entry.time);
+        holder.vStartDate.setText("Start Time: " + DateUtil.FormatDateView(entry.startTime));
+        holder.vEndDate.setText("End Time: " + DateUtil.FormatDateView(entry.endTime));
     }
 
     @Override
@@ -39,19 +42,27 @@ public class CalendarListAdapter extends RecyclerView.Adapter <CalendarListAdapt
 
     public static class CalendarViewHolder extends RecyclerView.ViewHolder {
         protected TextView vName;
-        protected TextView vDate;
-        protected TextView vTime;
+        protected TextView vStartDate;
+        protected TextView vEndDate;
 
         public CalendarViewHolder(View v) {
             super(v);
             vName =  (TextView) v.findViewById(R.id.eventName);
-            vDate = (TextView) v.findViewById(R.id.eventDate);
-            vTime = (TextView) v.findViewById(R.id.eventTime);
+            vStartDate = (TextView) v.findViewById(R.id.eventStartDate);
+            vEndDate = (TextView) v.findViewById(R.id.eventEndDate);
         }
     }
 
     public void addItem(CalendarEvent event) {
         entryList.add(event);
+        Collections.sort(entryList, new DateComparator());
         notifyDataSetChanged();
+    }
+
+    public class DateComparator implements Comparator<CalendarEvent> {
+        @Override
+        public int compare(CalendarEvent e1, CalendarEvent e2) {
+            return e1.startTime.compareTo(e2.startTime);
+        }
     }
 }
