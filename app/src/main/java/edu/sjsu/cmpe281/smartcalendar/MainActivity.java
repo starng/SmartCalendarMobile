@@ -16,6 +16,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -23,14 +24,13 @@ import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
     private Toolbar mToolbar;
     private CalendarListAdapter mAdapter;
+    private RecyclerView recList;
     private RequestQueue queue;
 
     public static final int ADD_NEW_CALENDAR_EVENT = 11;
@@ -47,14 +47,11 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(mToolbar);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        RecyclerView recList = (RecyclerView) findViewById(R.id.cardList);
+        recList = (RecyclerView) findViewById(R.id.cardList);
         recList.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         recList.setLayoutManager(llm);
-
-        mAdapter = new CalendarListAdapter(createList(5));
-        recList.setAdapter(mAdapter);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -65,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(intent, ADD_NEW_CALENDAR_EVENT);
             }
         });
+
+        getEvents();
     }
 
     @Override
@@ -84,13 +83,12 @@ public class MainActivity extends AppCompatActivity {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                //postRequest(getString(R.string.postEventUrl), data.getStringExtra(ADD_EVENT_JSON));
+                postRequest(getString(R.string.postEventUrl), jsonStr);
             }
         }
     }
 
     private List<CalendarEvent> createList(int size) {
-
         List<CalendarEvent> result = new ArrayList<CalendarEvent>();
         for (int i=1; i <= size; i++) {
             CalendarEvent ci = new CalendarEvent();
@@ -102,6 +100,55 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return result;
+    }
+
+    //REST CAll to get events
+    private void getEvents() {
+        String url = getString(R.string.getEventsUrl);
+
+        JsonObjectRequest getRequest = new JsonObjectRequest(Request.Method.GET, url, null,
+                new Response.Listener<JSONObject>()
+                {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        //events[]
+                        //eventName: "Bing's Event"
+                        //startTime: "asdasda"
+                        //endTime: "asdad"
+
+                        try {
+
+                            ArrayList<CalendarEvent> eventList = new ArrayList<>();
+
+                            //TODO: FOR LOOP START
+                            CalendarEvent event = new CalendarEvent();
+
+                            event.name = response.getString("eventName");
+                            event.startTime = DateUtil.FormatDateView(response.getString("startTime"));
+                            event.endTime = DateUtil.FormatDateView(response.getString("endTime"));
+                            eventList.add(event);
+
+                            //FOR LOOP END
+
+                            mAdapter = new CalendarListAdapter(eventList);
+                            recList.setAdapter(mAdapter);
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        Log.d("Response", response.toString());
+                    }
+                },
+                new Response.ErrorListener()
+                {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.d("Error.Response", error.getMessage());
+                    }
+                }
+        );
+
+        queue.add(getRequest);
     }
 
     private void postRequest(final String url, final String requestBody) {
@@ -124,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
             ) {
                 @Override
                 public String getBodyContentType() {
-                    return String.format("application/json; charset=utf-8");
+                   return String.format("application/json; charset=utf-8");
                 }
 
                 @Override
