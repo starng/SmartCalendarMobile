@@ -15,6 +15,6 @@
     <string name="emptyDate">--/--/----</string>
     <string name="emptyTime">--:--</string>
 
-    <string name="postEventUrl">http://1-dot-zhenyu-zhong-513.appspot.com/zhenyu_zhong_513</string>
-    <string name="getEventsUrl"></string>
+    <string name="postEventUrl">http://aaa1.hg7a75tmnt.us-west-2.elasticbeanstalk.com/cmpe281BingShi039/rest</string>
+    <string name="getEventsUrl">http://aaa1.hg7a75tmnt.us-west-2.elasticbeanstalk.com/cmpe281BingShi039/rest</string>
 </resources>

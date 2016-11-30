@@ -121,13 +121,14 @@ public class MainActivity extends AppCompatActivity {
                             ArrayList<CalendarEvent> eventList = new ArrayList<>();
 
                             //TODO: FOR LOOP START
-                            CalendarEvent event = new CalendarEvent();
+                            while(!response.getString("eventName").equals(null)) {
+                                CalendarEvent event = new CalendarEvent();
 
-                            event.name = response.getString("eventName");
-                            event.startTime = DateUtil.FormatDateView(response.getString("startTime"));
-                            event.endTime = DateUtil.FormatDateView(response.getString("endTime"));
-                            eventList.add(event);
-
+                                event.name = response.getString("eventName");
+                                event.startTime = DateUtil.FormatDateView(response.getString("startTime"));
+                                event.endTime = DateUtil.FormatDateView(response.getString("endTime"));
+                                eventList.add(event);
+                            }
                             //FOR LOOP END
 
                             mAdapter = new CalendarListAdapter(eventList);
