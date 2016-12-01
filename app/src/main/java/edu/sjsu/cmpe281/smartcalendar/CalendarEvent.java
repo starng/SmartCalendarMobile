@@ -17,6 +17,7 @@ public class CalendarEvent {
     protected boolean trafficCheck = false;
     protected boolean allDayEvent = false;
     protected String description;
+    protected String mymessage;
 
     protected static final String NAME_PREFIX = "Name_";
     protected static final String SURNAME_PREFIX = "Date_";

@@ -33,6 +33,7 @@ public class CalendarListAdapter extends RecyclerView.Adapter <CalendarListAdapt
         holder.vName.setText(entry.name);
         holder.vStartDate.setText("Start Time: " + DateUtil.FormatDateView(entry.startTime));
         holder.vEndDate.setText("End Time: " + DateUtil.FormatDateView(entry.endTime));
+        holder.vmymessage.setText("Message: " + DateUtil.FormatDateView(entry.mymessage));
     }
 
     @Override
@@ -44,12 +45,15 @@ public class CalendarListAdapter extends RecyclerView.Adapter <CalendarListAdapt
         protected TextView vName;
         protected TextView vStartDate;
         protected TextView vEndDate;
+        protected TextView vmymessage;
 
         public CalendarViewHolder(View v) {
             super(v);
             vName =  (TextView) v.findViewById(R.id.eventName);
             vStartDate = (TextView) v.findViewById(R.id.eventStartDate);
             vEndDate = (TextView) v.findViewById(R.id.eventEndDate);
+            vmymessage = (TextView) v.findViewById(R.id.eventmymessage);
+
         }
     }
 
