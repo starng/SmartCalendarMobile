@@ -39,6 +39,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private Toolbar mToolbar;
@@ -123,7 +125,25 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         });
 
-        getEvents();
+//        getEvents();
+
+
+
+        Timer timer = new Timer ();
+        TimerTask hourlyTask = new TimerTask () {
+            @Override
+            public void run () {
+
+                getEvents();
+            }
+        };
+// schedule the task to run starting now and then every hour...
+//        timer.schedule (hourlyTask, 0l, 1000*60*60);
+        timer.schedule (hourlyTask, 0l, 1000*60);
+
+
+
+
     }
 
     @Override
@@ -191,7 +211,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                                 //String sss=DateUtil.FormatDateView(jsonObject.getString("startTime"));
                                 event.startTime = jsonObject.getString("startTime");
                                 event.endTime = jsonObject.getString("endTime");
-                                event.mymessage = "eaeaaa";
+                                if(jsonObject.getString("myMessage").trim().equals("")) {
+                                    event.mymessage = "Enjoy your day!";
+                                }
+                                else{
+                                    event.mymessage = jsonObject.getString("myMessage");
+                                }
                                 eventList.add(event);
                             }
 
