@@ -189,8 +189,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
                                 event.name = jsonObject.getString("eventName");
                                 //String sss=DateUtil.FormatDateView(jsonObject.getString("startTime"));
-                                event.startTime = DateUtil.FormatDateView(jsonObject.getString("startTime"));
-                                event.endTime = DateUtil.FormatDateView(jsonObject.getString("endTime"));
+                                event.startTime = jsonObject.getString("startTime");
+                                event.endTime = jsonObject.getString("endTime");
                                 eventList.add(event);
                             }
 
