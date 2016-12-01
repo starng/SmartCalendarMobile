@@ -16,7 +16,7 @@ public class DateUtil {
         String[] dateTime = date.split(" ");
         String[] dateArr = dateTime[0].split("-");
 
-        return monthList.get(Integer.parseInt(dateArr[1]) - 1) + " " + dateArr[2] + ", " + dateArr[0];
+        return monthList.get(Integer.parseInt(dateArr[1]) - 1) + " " + dateArr[2] + ", " + dateArr[0] + " " + dateTime[1];
     }
 
     public static String FormatDateTime(String date, String time) {
