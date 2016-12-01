@@ -1,14 +1,23 @@
 package edu.sjsu.cmpe281.smartcalendar;
 
+import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -19,7 +28,11 @@ import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
@@ -27,7 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private Toolbar mToolbar;
     private CalendarListAdapter mAdapter;
     private RecyclerView recList;
@@ -35,6 +48,45 @@ public class MainActivity extends AppCompatActivity {
 
     public static final int ADD_NEW_CALENDAR_EVENT = 11;
     public static final String ADD_EVENT_JSON = "addEventJson";
+
+    GoogleApiClient mGoogleApiClient;
+    Location mLastLocation;
+
+    @Override
+    public void onConnectionFailed(ConnectionResult arg0) {
+        Toast.makeText(this, "Failed to connect...", Toast.LENGTH_SHORT).show();
+
+    }
+
+    @Override
+    public void onConnected(Bundle arg0) {
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+
+        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
+                mGoogleApiClient);
+
+        if (mLastLocation != null) {
+            System.out.println(mLastLocation.getLatitude());
+        }
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int arg0) {
+        Toast.makeText(this, "Connection suspended...", Toast.LENGTH_SHORT).show();
+
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +104,14 @@ public class MainActivity extends AppCompatActivity {
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         recList.setLayoutManager(llm);
+
+//        buildGoogleApiClient();
+//
+//        if(mGoogleApiClient!= null){
+//            mGoogleApiClient.connect();
+//        }
+//        else
+//            Toast.makeText(this, "Not connected...", Toast.LENGTH_SHORT).show();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -121,15 +181,28 @@ public class MainActivity extends AppCompatActivity {
                             ArrayList<CalendarEvent> eventList = new ArrayList<>();
 
                             //TODO: FOR LOOP START
-                            while(!response.getString("eventName").equals(null)) {
+                            JSONArray jsonArray=response.getJSONArray("events");
+                            for (int i = 0; i < jsonArray.length(); i++) {
+
+                                JSONObject jsonObject = jsonArray.getJSONObject(i);
                                 CalendarEvent event = new CalendarEvent();
 
-                                event.name = response.getString("eventName");
-                                event.startTime = DateUtil.FormatDateView(response.getString("startTime"));
-                                event.endTime = DateUtil.FormatDateView(response.getString("endTime"));
+                                event.name = jsonObject.getString("eventName");
+                                //String sss=DateUtil.FormatDateView(jsonObject.getString("startTime"));
+                                event.startTime = DateUtil.FormatDateView(jsonObject.getString("startTime"));
+                                event.endTime = DateUtil.FormatDateView(jsonObject.getString("endTime"));
                                 eventList.add(event);
                             }
-                            //FOR LOOP END
+
+//                            while(!response.getString("eventName").equals(null))  {
+//                                CalendarEvent event = new CalendarEvent();
+//
+//                                event.name = response.getString("eventName");
+//                                event.startTime = DateUtil.FormatDateView(response.getString("startTime"));
+//                                event.endTime = DateUtil.FormatDateView(response.getString("endTime"));
+//                                eventList.add(event);
+//                            }
+//                            //FOR LOOP END
 
                             mAdapter = new CalendarListAdapter(eventList);
                             recList.setAdapter(mAdapter);
@@ -147,6 +220,7 @@ public class MainActivity extends AppCompatActivity {
                         Log.d("Error.Response", error.getMessage());
                     }
                 }
+                //TODO: it crashed after this, it went into looper.class and keeps looping, andriod crash
         );
 
         queue.add(getRequest);
@@ -191,4 +265,64 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
+
+
+    protected synchronized void buildGoogleApiClient() {
+         mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+    }
+
+    private void getLocaton(){
+        // Acquire a reference to the system Location Manager
+        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+
+        // Define a listener that responds to location updates
+        LocationListener locationListener = new LocationListener() {
+            public void onLocationChanged(Location location) {
+                // Called when a new location is found by the network location provider.
+//                makeUseOfNewLocation(location);
+                System.out.print(location);
+            }
+
+            public void onStatusChanged(String provider, int status, Bundle extras) {}
+
+            public void onProviderEnabled(String provider) {}
+
+            public void onProviderDisabled(String provider) {}
+        };
+
+// Register the listener with the Location Manager to receive location updates
+        // Here, thisActivity is the current activity
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.ACCESS_FINE_LOCATION)) {
+
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+            } else {
+
+                // No explanation needed, we can request the permission.
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        0);
+
+                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
+            }
+        }
+
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+    }
+
 }
