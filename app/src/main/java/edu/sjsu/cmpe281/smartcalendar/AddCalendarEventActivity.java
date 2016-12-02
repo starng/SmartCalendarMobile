@@ -230,6 +230,7 @@ public class AddCalendarEventActivity extends AppCompatActivity {
                 default:
                     resId = 0;
             }
+            month++;
 
             String monthStr = Integer.toString(month);
             if (month < 10) {

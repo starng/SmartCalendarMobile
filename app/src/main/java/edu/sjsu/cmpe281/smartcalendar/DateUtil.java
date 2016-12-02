@@ -1,5 +1,7 @@
 package edu.sjsu.cmpe281.smartcalendar;
 
+import android.util.Log;
+
 import java.util.Arrays;
 import java.util.List;
 
